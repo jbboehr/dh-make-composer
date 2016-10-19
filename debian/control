@@ -1,0 +1,19 @@
+Source: dh-make-composer
+Section: php
+Priority: extra
+Maintainer: John Boehr <jbboehr@gmail.com>
+Uploaders: John Boehr <jbboehr@gmail.com>
+Build-Depends: debhelper (>= 9), pkg-php-tools (>= 1.7~), phpab
+Standards-Version: 3.9.6
+Homepage:
+Vcs-Git: git://github.com/jbboehr/dh-make-composer.git
+Vcs-Browser: https://github.com/jbboehr/dh-make-composer.git
+
+Package: dh-make-composer
+Architecture: all
+Depends: ${misc:Depends}, composer (>= 1.0.0~beta2-1) | composer (<= 1.0.99)
+Description: ${phpcomposer:description}
+
+Package: php-jbboehr-dh-make-composer
+Architecture: all
+Depends: dh-make-composer

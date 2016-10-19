@@ -1,3 +1,9 @@
+*.log
+*.substvars
+*-stamp
 /.idea/
+/debian/files
+/debian/dh-make-composer/
+/debian/php-jbboehr-dh-make-composer/
 /output*/
 /vendor/
