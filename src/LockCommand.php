@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class BuildCommand extends Command
+class LockCommand extends Command
 {
     private $outputDirectory;
 
@@ -19,8 +19,8 @@ class BuildCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('build')
-            ->setDescription('Build package')
+            ->setName('lock')
+            ->setDescription('Build package from lock file')
             ->addArgument(
                 'directory',
                 InputArgument::REQUIRED,
