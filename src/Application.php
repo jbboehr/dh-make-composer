@@ -8,5 +8,6 @@ class Application extends BasicApplication {
     public function __construct() {
         parent::__construct(func_get_args());
         $this->add(new LockCommand());
+        $this->add(new CreateCommand());
     }
 }
