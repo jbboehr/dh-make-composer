@@ -97,27 +97,19 @@ class Utils
             foreach( $autoload['psr-0'] as $namespace => $path ) {
                 $ns = trim(str_replace(array('\\', '_'), '/', $namespace), '/');
                 $path = trim($path, '/') . '/' . $ns;
-                if( is_file($path . '.php') ) {
-                    $path = dirname($path);
-                }
                 $paths[$path] = true;
             }
         }
 
         if( !empty($autoload['classmap']) ) {
             foreach( $autoload['classmap'] as $path ) {
-                if( is_file($path) ) {
-                    $path = dirname($path);
-                }
                 $paths[$path] = true;
             }
         }
 
         if( !empty($autoload['files']) ) {
             foreach( $autoload['files'] as $path ) {
-                if( is_file($path) ) {
-                    $path = dirname($path);
-                }
+                $path = dirname($path);
                 $paths[$path] = true;
             }
         }
@@ -129,6 +121,7 @@ class Utils
         } else if( count($paths) === 1 ) {
             $path = $paths[0];
         } else {
+            /*
             $commonPath = array_shift($paths);
             foreach( $paths as $path ) {
                 for( $i = 0; $i < strlen($path) && $i < strlen($commonPath); $i ++ ) {
@@ -140,6 +133,8 @@ class Utils
 
             }
             $path = $commonPath;
+            */
+            return null;
         }
 
         if( $path ) {

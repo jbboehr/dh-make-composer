@@ -14,7 +14,6 @@ class LinksGenerator extends AbstractGenerator
             mkdir($outputDirectory . '/debian');
         }
 
-        $output = $this->output;
         $debName = Utils::composerNameToDebName($package->getName());
         $outputFile = $outputDirectory . '/debian/' . $debName . '.links';
         $autoload = $package->getAutoload();
@@ -25,14 +24,9 @@ class LinksGenerator extends AbstractGenerator
         // Make path map
         if( !empty($autoload['psr-4']) ) {
             foreach( $autoload['psr-4'] as $namespace => $path ) {
-                if( empty($path) ) {
-                    $output->writeln("<warning>PSR-4 path cannot be empty for namespace: " . $namespace . " </warning>");
-                    continue;
-                }
-
                 $right = rtrim($path, '/');
                 $left = rtrim(str_replace('\\', '/', $namespace), '/');
-                $pathMap[$right] =  $left;
+                $pathMap[$right] = $left;
             }
         }
 
