@@ -13,7 +13,3 @@ Package: dh-make-composer
 Architecture: all
 Depends: ${misc:Depends}, composer (>= 1.0.0~beta2-1) | composer (<= 1.0.99)
 Description: ${phpcomposer:description}
-
-Package: php-jbboehr-dh-make-composer
-Architecture: all
-Depends: dh-make-composer

@@ -1,3 +1,9 @@
+dh-make-composer (0.1.1) xenial; urgency=medium
+
+  * Remove extra package
+
+ -- John Boehr <jbboehr@gmail.com>  Wed, 19 Oct 2016 14:41:09 -0700
+
 dh-make-composer (0.1.0) xenial; urgency=low
 
   * Initial release
