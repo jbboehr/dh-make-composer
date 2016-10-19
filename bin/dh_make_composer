@@ -3,13 +3,51 @@
 
 use DhMakeComposer\Application;
 
-set_include_path(get_include_path() . PATH_SEPARATOR . realpath(__DIR__ . '/..'));
+// Include composer autoloader
+$files = array(
+    dirname(dirname(__DIR__)) . '/vendor/autoload.php',
+    dirname(__DIR__) . '/vendor/autoload.php',
+);
+$autoloader = null;
+foreach( $files as $file ) {
+    if( file_exists($file) ) {
+        $autoloader = require_once $file;
+        break;
+    }
+}
 
-require_once 'Composer/autoload.php';
-require_once 'Symfony/Component/Console/autoload.php';
-require_once 'Symfony/Component/Filesystem/autoload.php';
-require_once 'Symfony/Component/Process/autoload.php';
-require_once 'vendor/autoload.php';
+// Include system libraries
+$files2 = array(
+    'Composer/autoload.php',
+    'Composer/autoload.php',
+    'Symfony/Component/Console/autoload.php',
+    'Symfony/Component/Filesystem/autoload.php',
+    'Symfony/Component/Process/autoload.php',
+    'DhMakeComposer/autoload.php',
+);
+foreach( $files2 as $file ) {
+    if( file_exists('/usr/share/php/' . $file) ) {
+        require_once $file;
+    }
+}
+
+// Add generic autoloader
+if( !$autoloader ) {
+    spl_autoload_register(function ($className) {
+        // Our namespace
+        if( 0 === strncmp($className, 'DhMakeComposer\\', strlen('DhMakeComposer\\')) ) {
+            $fragment = str_replace(array('_', '\\'), '/', substr($className, strlen('DhMakeComposer\\')));
+            $path = __DIR__ . '/../src/' . $fragment  . '.php';
+            if( file_exists($path) ) {
+                require_once $path;
+                return;
+            }
+        }
+        // Everything else
+        $fragment = str_replace(array('_', '\\'), '/', $className) . '.php';
+        include_once $fragment;
+    });
+}
 
 $builder = new Application();
 $builder->run();
