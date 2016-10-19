@@ -22,6 +22,8 @@ class RulesGenerator extends AbstractGenerator
             '%:',
             "\tdh $@ --with phpcomposer --buildsystem=makefile",
             '',
+            'override_dh_auto_test:',
+            '',
             'override_dh_auto_build:',
         );
 
