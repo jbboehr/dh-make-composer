@@ -29,7 +29,7 @@ class ControlGenerator extends AbstractGenerator
             'Priority: extra',
             'Maintainer: ' . Utils::personArrayToString($maintainer),
             'Uploaders: ' . Utils::personArrayToString($uploader),
-            'Build-Depends: debhelper (>= 9), pkg-php-tools (>= 1.7~)',
+            'Build-Depends: debhelper (>= 9), pkg-php-tools (>= 1.7~), phpab',
             'Standards-Version: 3.9.6',
             'Homepage: ' . $package->getHomepage() ?? $package->getDistUrl(),
             'Vcs-Git: ' . $this->getVcsGit($package),

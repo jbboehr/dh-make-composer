@@ -19,6 +19,8 @@ class LinksGenerator extends AbstractGenerator
         $outputFile = $outputDirectory . '/debian/' . $debName . '.links';
         $autoload = $package->getAutoload();
         $pathMap = array();
+        $leftPrefix = 'usr/share/composer/' . $package->getName() . '/';
+        $rightPrefix = 'usr/share/php/';
 
         // Make path map
         if( !empty($autoload['psr-4']) ) {
@@ -28,35 +30,30 @@ class LinksGenerator extends AbstractGenerator
                     continue;
                 }
 
-                $ns = rtrim(str_replace('\\', '/', $namespace), '/');
-                $left = 'usr/share/composer/' . rtrim($path, '/');
-                $right = 'usr/share/php/' . $ns;
-                $pathMap[$left] = $right;
+                $right = rtrim($path, '/');
+                $left = rtrim(str_replace('\\', '/', $namespace), '/');
+                $pathMap[$right] =  $left;
             }
         }
 
         if( !empty($autoload['psr-0']) ) {
             foreach( $autoload['psr-0'] as $namespace => $path ) {
-                // It's ok for PSR-0 to not include path
-                $ns = rtrim(str_replace(array('\\', '_'), '/', $namespace), '/');
-                list($leftmost) = explode('/', $ns);
-                $left = 'usr/share/composer/' . $path . $leftmost;
-                $right = 'usr/share/php/' . $leftmost;
+                list($leftmost) = explode('\\', $namespace);
+                $left = $path . $leftmost;
+                $right = $leftmost;
                 $pathMap[$left] = $right;
             }
         }
 
-        if( !empty($autoload->files) ) {
-            // @todo ?
-        }
-
-        if( !empty($autoload->classmap) ) {
-            // @todo ?
-        }
-
         $lines = array();
-        foreach( $pathMap as $k => $v ) {
-            $lines[] = $k . ' ' . $v;
+        foreach( $pathMap as $left => $right ) {
+            $lines[] = $leftPrefix . $left . ' ' . $rightPrefix . $right;
+        }
+
+        if( ($binaries = $package->getBinaries()) ) {
+            foreach( $binaries as $bin ) {
+                $lines[] = 'usr/bin/' . basename($bin) . ' ' . $leftPrefix . $bin;
+            }
         }
 
         file_put_contents($outputFile, join("\n", $lines));

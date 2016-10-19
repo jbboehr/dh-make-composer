@@ -90,7 +90,7 @@ class CreateCommand extends Command
         (new Generator\CompatGenerator($output))->generate($package, $packageOutputDir);
         (new Generator\RulesGenerator($output))->generate($package, $packageOutputDir);
         (new Generator\CopyrightGenerator($output))->generate($package, $packageOutputDir);
-        //(new Generator\LinksGenerator($output))->generate($package, $packageOutputDir);
+        (new Generator\LinksGenerator($output))->generate($package, $packageOutputDir);
         (new Generator\InstallGenerator($output))->generate($package, $packageOutputDir);
         (new Generator\DocsGenerator($output))->generate($package, $packageOutputDir);
 

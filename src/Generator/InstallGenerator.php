@@ -14,54 +14,27 @@ class InstallGenerator extends AbstractGenerator
             mkdir($outputDirectory . '/debian');
         }
 
-        $output = $this->output;
         $debName = Utils::composerNameToDebName($package->getName());
         $outputFile = $outputDirectory . '/debian/' . $debName . '.install';
-        $autoload = $package->getAutoload();
-        $pathMap = array();
-
-        // Make path map
-        if( !empty($autoload['psr-4']) ) {
-            foreach( $autoload['psr-4'] as $namespace => $path ) {
-                if( empty($path) ) {
-                    $output->writeln("<warning>PSR-4 path cannot be empty for namespace: " . $namespace . " </warning>");
-                    continue;
-                }
-
-                $ns = rtrim(str_replace('\\', '/', $namespace), '/');
-                $left = rtrim($path, '/');
-                $right = 'usr/share/php/' . $ns;
-                $pathMap[$left] = $right;
-            }
-        }
-
-        if( !empty($autoload['psr-0']) ) {
-            foreach( $autoload['psr-0'] as $namespace => $path ) {
-                // It's ok for PSR-0 to not include path
-                $ns = rtrim(str_replace(array('\\', '_'), '/', $namespace), '/');
-                list($leftmost) = explode('/', $ns);
-                $left = $path . $leftmost;
-                $right = 'usr/share/php/' . $leftmost;
-                $pathMap[$left] = $right;
-            }
-        }
-
-        if( !empty($autoload->files) ) {
-            // @todo ?
-        }
-
-        if( !empty($autoload->classmap) ) {
-            // @todo ?
-        }
-
+        $targetDirectory = 'usr/share/composer/' . $package->getName();
+        $sourceRoot = Utils::detectSourceRoot($package);
         $lines = array();
-        foreach( $pathMap as $k => $v ) {
-            $lines[] = $k . ' ' . $v;
-        }
 
-        // Add composer.json to install
-        $lines[] = 'composer.json usr/share/composer/' . $package->getName();
+        if( $sourceRoot ) {
+            $lines[] = $this->pathToInstallLine($targetDirectory, $sourceRoot);
+        } else {
+            foreach( Utils::getInterestingPathsFromPackage($package) as $path ) {
+                $lines[] = $this->pathToInstallLine($targetDirectory, $path);;
+            }
+        }
 
         file_put_contents($outputFile, join("\n", $lines));
+    }
+
+    private function pathToInstallLine($targetDirectory, $path)
+    {
+        $parts = explode('/', $path);
+        array_pop($parts);
+        return $path . ' ' . $targetDirectory . '/' . join('/', $parts);
     }
 }
