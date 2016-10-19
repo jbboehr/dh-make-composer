@@ -41,6 +41,9 @@ class LinksGenerator extends AbstractGenerator
 
         $lines = array();
         foreach( $pathMap as $left => $right ) {
+            if( in_array(strtolower($left), array('test', 'tests')) ) {
+                continue;
+            }
             $lines[] = $leftPrefix . $left . ' ' . $rightPrefix . $right;
         }
 
