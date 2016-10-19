@@ -115,7 +115,7 @@ class BuildCommand extends Command
         file_put_contents($debianDirectory . '/copyright', $this->makeCopyrightFile($package));
         file_put_contents($debianDirectory . '/rules', $this->makeRulesFile());
         file_put_contents($debianDirectory . '/compat',  '9');
-        file_put_contents($debianDirectory . '/' . $debName . '.install', $this->makeInstallFile($package));
+        file_put_contents($debianDirectory . '/' . $debName . '.install', $this->makeInstallFile($package, $output));
 
     }
 
@@ -252,7 +252,7 @@ class BuildCommand extends Command
         ));
     }
 
-    private function makeInstallFile($package)
+    private function makeInstallFile($package, OutputInterface $output)
     {
         $autoload = $package->autoload;
 
@@ -260,14 +260,40 @@ class BuildCommand extends Command
         $pathMap = array();
         if( !empty($autoload->{'psr-4'}) ) {
             foreach( $autoload->{'psr-4'} as $namespace => $path ) {
+                if( empty($path) ) {
+                    $output->writeln("<error>PSR-4 path cannot be empty for namespace: " . $namespace . " </error>");
+                    continue;
+                }
 
+                $ns = rtrim(str_replace('\\', '/', $namespace), '/');
+                $left = rtrim($path, '/');
+                $right = '/usr/share/php/' . $ns;
+                $pathMap[$left] = $right;
             }
         }
         if( !empty($autoload->{'psr-0'}) ) {
             foreach( $autoload->{'psr-0'} as $namespace => $path ) {
-                $pathMap[$path] = '/usr/share/php/';
+                // It's ok for PSR-0 to not include path
+                $ns = rtrim(str_replace(array('\\', '_'), '/', $namespace), '/');
+                list($leftmost) = explode('/', $ns);
+                $left = $path . $leftmost;
+                $right = '/usr/share/php/' . $leftmost;
+                $pathMap[$left] = $right;
             }
         }
+        if( !empty($autoload->files) ) {
+            // @todo ?
+        }
+        if( !empty($autoload->classmap) ) {
+            // @todo ?
+        }
+
+        $lines = array();
+        foreach( $pathMap as $k => $v ) {
+            $lines[] = $k . ' ' . $v;
+        }
+
+        return join("\n", $lines);
     }
 
 
@@ -275,6 +301,10 @@ class BuildCommand extends Command
 
     static private function composerNameToDebName($name)
     {
+        list($vendor, $package) = explode('/', $name, 2);
+        if( $vendor === $package ) {
+            $name = $package;
+        }
         return 'php-' . trim(preg_replace('/[^a-z0-9]+/i', '-', $name), '-');
     }
 }
