@@ -20,7 +20,7 @@ class RulesGenerator extends AbstractGenerator
         $lines = array(
             '#!/usr/bin/make -f',
             '%:',
-            "\tdh $@ --with phpcomposer",
+            "\tdh $@ --with phpcomposer --buildsystem=makefile",
             '',
             'override_dh_auto_build:',
         );
