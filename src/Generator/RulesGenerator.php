@@ -25,9 +25,10 @@ class RulesGenerator extends AbstractGenerator
             'override_dh_auto_build:',
         );
 
-        if( $sourceRoot ) {
-            $lines[] = "\tphpab --output " . $sourceRoot . '/autoload.php ' . $sourceRoot;
-        }
+
+//        if( $sourceRoot ) {
+//            $lines[] = "\tphpab --output " . $sourceRoot . '/autoload.php ' . $sourceRoot;
+//        }
 
         $lines[] = '';
 
