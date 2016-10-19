@@ -93,6 +93,7 @@ class CreateCommand extends Command
         (new Generator\LinksGenerator($output))->generate($package, $packageOutputDir);
         (new Generator\InstallGenerator($output))->generate($package, $packageOutputDir);
         (new Generator\DocsGenerator($output))->generate($package, $packageOutputDir);
+        (new Generator\SourceFormatGenerator($output))->generate($package, $packageOutputDir);
 
         $output->writeln('Debian package created in ' . $packageOutputDir . '');
         $output->writeln('');
