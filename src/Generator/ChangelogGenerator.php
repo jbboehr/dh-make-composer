@@ -18,7 +18,7 @@ class ChangelogGenerator extends AbstractGenerator
         $debName = Utils::composerNameToDebName($package->getName());
         $version = Utils::getVersionFromPackage($package);
         $pkgVersion = '1';
-        $fullVersion = $version . '-' . $pkgVersion;
+        $fullVersion = $version . '-' . $pkgVersion . '+xdmc' . date('YmdHm');
 
         $uploader = Utils::getUploaderFromPackage($package)
             ?? Utils::getUploaderFromGitConfig()

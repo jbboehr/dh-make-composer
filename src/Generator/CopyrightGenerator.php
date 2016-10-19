@@ -48,7 +48,14 @@ class CopyrightGenerator extends AbstractGenerator
         }
 
         // @todo fixme
-        return join(', ', $licenseArray) . $end;
+        return join(', ', array_map(function($license) {
+            $map = array('lgplv3' => 'LGPL-3.0');
+            if( isset($map[$license]) ) {
+                return $map[$license];
+            } else {
+                return $license;
+            }
+        }, $licenseArray)) . $end;
     }
 
     private function indentLicense($licenseFile)

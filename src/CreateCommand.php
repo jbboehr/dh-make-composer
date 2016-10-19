@@ -16,7 +16,9 @@ use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\Output;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Process;
 
 class CreateCommand extends Command
 {
@@ -41,6 +43,12 @@ class CreateCommand extends Command
                 InputOption::VALUE_REQUIRED,
                 'The output directory',
                 '.'
+            )
+            ->addOption(
+                'build',
+                'b',
+                InputOption::VALUE_NONE,
+                'Build the packages'
             );
     }
 
@@ -49,6 +57,7 @@ class CreateCommand extends Command
         $packageName = $input->getArgument('package');
         $version = $input->getArgument('version');
         $outputDirectory = $input->getOption('output');
+        $buildAlso = $input->getOption('build');
 
         // Make composer object
         $io = new ConsoleIO($input, $output, new HelperSet());
@@ -97,5 +106,47 @@ class CreateCommand extends Command
 
         $output->writeln('Debian package created in ' . $packageOutputDir . '');
         $output->writeln('');
+
+        if( $buildAlso ) {
+            $this->doRelease($packageOutputDir, $output);
+            $this->doBinaryBuild($packageOutputDir, $output);
+            $this->doSourceBuild($packageOutputDir, $output);
+        }
+    }
+
+    private function doRelease($packageOutputDir, OutputInterface $output)
+    {
+        $process = new Process("debchange --release ''", $packageOutputDir);
+        $process->run(function($type, $data) use ($output) {
+            $output->write($data, false, Output::OUTPUT_RAW);
+        });
+        if( !$process->isSuccessful() ) {
+            $output->writeln($process->getErrorOutput());
+            throw new \RuntimeException('Failed to execute command');
+        }
+    }
+
+    private function doBinaryBuild($packageOutputDir, OutputInterface $output)
+    {
+        $process = new Process("debuild", $packageOutputDir);
+        $process->run(function($type, $data) use ($output) {
+            $output->write($data, false, Output::OUTPUT_RAW);
+        });
+        if( !$process->isSuccessful() ) {
+            $output->writeln($process->getErrorOutput());
+            throw new \RuntimeException('Failed to execute command');
+        }
+    }
+
+    private function doSourceBuild($packageOutputDir, OutputInterface $output)
+    {
+        $process = new Process("debuild -S", $packageOutputDir);
+        $process->run(function($type, $data) use ($output) {
+            $output->write($data, false, Output::OUTPUT_RAW);
+        });
+        if( !$process->isSuccessful() ) {
+            $output->writeln($process->getErrorOutput());
+            throw new \RuntimeException('Failed to execute command');
+        }
     }
 }

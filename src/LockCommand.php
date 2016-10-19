@@ -28,6 +28,12 @@ class LockCommand extends Command
                 'The output directory',
                 '.'
             )
+            ->addOption(
+                'build',
+                'b',
+                InputOption::VALUE_NONE,
+                'Build the packages'
+            )
         ;
     }
 
@@ -35,6 +41,7 @@ class LockCommand extends Command
     {
         $inputDirectory = $input->getArgument('directory');
         $outputDirectory = $input->getOption('output');
+        $buildAlso = $input->getOption('build');
 
         if( substr($inputDirectory, -strlen('composer.lock')) === 'composer.lock' ) {
             $inputFile = $inputDirectory;
@@ -54,13 +61,17 @@ class LockCommand extends Command
 
         foreach( $lock->packages as $package ) {
             $command = new CreateCommand();
-            $fakeInput = new ArgvInput(array(
+            $argv = array(
                 '',
                 $package->name,
                 $package->version,
                 '--output',
                 $outputDirectory
-            ), $command->getDefinition());
+            );
+            if( $buildAlso ) {
+                $argv[] = '--build';
+            }
+            $fakeInput = new ArgvInput($argv, $command->getDefinition());
             $command->run($fakeInput, $output);
         }
 
