@@ -302,7 +302,8 @@ class BuildCommand extends Command
     static private function composerNameToDebName($name)
     {
         list($vendor, $package) = explode('/', $name, 2);
-        if( $vendor === $package ) {
+        // If the package name begins with vendor, omit the vendor from the combined package name
+        if( substr($package, 0, strlen($vendor)) === $vendor ) {
             $name = $package;
         }
         return 'php-' . trim(preg_replace('/[^a-z0-9]+/i', '-', $name), '-');
