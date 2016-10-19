@@ -46,7 +46,7 @@ class LinksGenerator extends AbstractGenerator
 
         if( ($binaries = $package->getBinaries()) ) {
             foreach( $binaries as $bin ) {
-                $lines[] = 'usr/bin/' . basename($bin) . ' ' . $leftPrefix . $bin;
+                $lines[] = $leftPrefix . $bin . ' usr/bin/' . basename($bin);
             }
         }
 
