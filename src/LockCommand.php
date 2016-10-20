@@ -40,6 +40,12 @@ class LockCommand extends Command
                 InputOption::VALUE_NONE,
                 'Do not include orig'
             )
+            ->addOption(
+                'freshdeb',
+                null,
+                InputOption::VALUE_NONE,
+                'Re-extract source packages (deletes debian folder, etc)'
+            )
         ;
     }
 
@@ -49,6 +55,7 @@ class LockCommand extends Command
         $outputDirectory = $input->getOption('output');
         $buildAlso = $input->getOption('build');
         $onlySourceDiff = $input->getOption('onlysourcediff');
+        $freshDeb = $input->getOption('freshdeb');
 
         if( substr($inputDirectory, -strlen('composer.lock')) === 'composer.lock' ) {
             $inputFile = $inputDirectory;
@@ -80,6 +87,9 @@ class LockCommand extends Command
             }
             if( $onlySourceDiff ) {
                 $argv[] = '--onlysourcediff';
+            }
+            if( $freshDeb ) {
+                $argv[] = '--freshdeb';
             }
             $fakeInput = new ArgvInput($argv, $command->getDefinition());
             $command->run($fakeInput, $output);

@@ -12,6 +12,7 @@ use Composer\Package\Archiver\ArchiveManager;
 use Composer\Package\Archiver\PharArchiver;
 use Composer\Package\CompletePackage;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -56,6 +57,12 @@ class CreateCommand extends Command
                 InputOption::VALUE_NONE,
                 'Do not include orig'
             )
+            ->addOption(
+                'freshdeb',
+                null,
+                InputOption::VALUE_NONE,
+                'Re-extract source packages (deletes debian folder, etc)'
+            )
         ;
     }
 
@@ -66,6 +73,7 @@ class CreateCommand extends Command
         $outputDirectory = $input->getOption('output');
         $buildAlso = $input->getOption('build');
         $onlySourceDiff = $input->getOption('onlysourcediff');
+        $freshDeb = $input->getOption('freshdeb');
 
         // Make composer object
         $io = new ConsoleIO($input, $output, new HelperSet());
@@ -88,18 +96,36 @@ class CreateCommand extends Command
         $debNameVersion = $debName . '-' . $version;
         $packageOutputDir = $outputDirectory . '/' . $debNameVersion;
         $origName = $debName . '_' . $version . '.orig';
+        $origFile = null;
 
-        // Create original
-        $downloader = new DownloadManager($io);
-        $downloader->setDownloader('git', new GitDownloader($io, $composerConfig));
-        $downloader->setDownloader('zip', new ZipDownloader($io, $composerConfig));
-        $archiver = new ArchiveManager($downloader);
-        $archiver->addArchiver(new PharArchiver());
-        $origFile = $archiver->archive($package, 'tar.gz', $outputDirectory, $origName);
+        // Attempt to get source package from apt
+        if( true ) { // @todo add flag
+            $origFile = $this->doFetchSourcePackage($debName, $version, $outputDirectory, $output);
+            if( $origFile ) {
+                // Don't include source if fetching from apt-get source
+                $onlySourceDiff = true;
+                if( $freshDeb ) {
+                    passthru('rm -rf ' . escapeshellarg($packageOutputDir));
+                }
+            }
+        }
+
+        if( !$origFile ) {
+            // Create original
+            $downloader = new DownloadManager($io);
+            $downloader->setDownloader('git', new GitDownloader($io, $composerConfig));
+            $downloader->setDownloader('zip', new ZipDownloader($io, $composerConfig));
+            $archiver = new ArchiveManager($downloader);
+            $archiver->addArchiver(new PharArchiver());
+            $origFile = $archiver->archive($package, 'tar.gz', $outputDirectory, $origName);
+            $freshDeb = true;
+        }
 
         // Extract
-        $archive = new \PharData($origFile);
-        $archive->extractTo($packageOutputDir, null, true);
+        if( $freshDeb ) {
+            $archive = new \PharData($origFile);
+            $archive->extractTo($packageOutputDir, null, true);
+        }
 
         // Generate
         (new Generator\ChangelogGenerator($output))->generate($package, $packageOutputDir);
@@ -140,6 +166,7 @@ class CreateCommand extends Command
         $process->run(function($type, $data) use ($output) {
             $output->write($data, false, Output::OUTPUT_RAW);
         });
+        $output->writeln('');
         if( !$process->isSuccessful() ) {
             $output->writeln($process->getErrorOutput());
             throw new \RuntimeException('Failed to execute command');
@@ -156,9 +183,27 @@ class CreateCommand extends Command
         $process->run(function($type, $data) use ($output) {
             $output->write($data, false, Output::OUTPUT_RAW);
         });
+        $output->writeln('');
         if( !$process->isSuccessful() ) {
             $output->writeln($process->getErrorOutput());
             throw new \RuntimeException('Failed to execute command');
+        }
+    }
+
+    private function doFetchSourcePackage($debName, $version, $outputDirectory, OutputInterface $output)
+    {
+        $process = new Process("apt-get source " . $debName . '=' . $version, $outputDirectory);
+
+        $output->writeln('');
+        $process->run(function($type, $data) use ($output) {
+            $output->write($data, false, Output::OUTPUT_RAW);
+        });
+        $output->writeln('');
+
+        if( $process->isSuccessful() ) {
+            return $outputDirectory . '/' . $debName . '_' . $version . '.orig.tar.gz';
+        } else {
+            return false;
         }
     }
 }
