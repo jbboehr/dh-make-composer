@@ -49,7 +49,14 @@ class CreateCommand extends Command
                 'b',
                 InputOption::VALUE_NONE,
                 'Build the packages'
-            );
+            )
+            ->addOption(
+                'onlysourcediff',
+                null,
+                InputOption::VALUE_NONE,
+                'Do not include orig'
+            )
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -58,6 +65,7 @@ class CreateCommand extends Command
         $version = $input->getArgument('version');
         $outputDirectory = $input->getOption('output');
         $buildAlso = $input->getOption('build');
+        $onlySourceDiff = $input->getOption('onlysourcediff');
 
         // Make composer object
         $io = new ConsoleIO($input, $output, new HelperSet());
@@ -110,7 +118,7 @@ class CreateCommand extends Command
         if( $buildAlso ) {
             $this->doRelease($packageOutputDir, $output);
             $this->doBinaryBuild($packageOutputDir, $output);
-            $this->doSourceBuild($packageOutputDir, $output);
+            $this->doSourceBuild($packageOutputDir, $output, $onlySourceDiff);
         }
     }
 
@@ -138,9 +146,13 @@ class CreateCommand extends Command
         }
     }
 
-    private function doSourceBuild($packageOutputDir, OutputInterface $output)
+    private function doSourceBuild($packageOutputDir, OutputInterface $output, $onlySourceDiff)
     {
-        $process = new Process("debuild -S", $packageOutputDir);
+        $cmd = 'debuild -S';
+        if( $onlySourceDiff ) {
+            $cmd .= ' -sd';
+        }
+        $process = new Process($cmd, $packageOutputDir);
         $process->run(function($type, $data) use ($output) {
             $output->write($data, false, Output::OUTPUT_RAW);
         });

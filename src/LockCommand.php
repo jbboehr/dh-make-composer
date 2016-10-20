@@ -34,6 +34,12 @@ class LockCommand extends Command
                 InputOption::VALUE_NONE,
                 'Build the packages'
             )
+            ->addOption(
+                'onlysourcediff',
+                null,
+                InputOption::VALUE_NONE,
+                'Do not include orig'
+            )
         ;
     }
 
@@ -42,6 +48,7 @@ class LockCommand extends Command
         $inputDirectory = $input->getArgument('directory');
         $outputDirectory = $input->getOption('output');
         $buildAlso = $input->getOption('build');
+        $onlySourceDiff = $input->getOption('onlysourcediff');
 
         if( substr($inputDirectory, -strlen('composer.lock')) === 'composer.lock' ) {
             $inputFile = $inputDirectory;
@@ -70,6 +77,9 @@ class LockCommand extends Command
             );
             if( $buildAlso ) {
                 $argv[] = '--build';
+            }
+            if( $onlySourceDiff ) {
+                $argv[] = '--onlysourcediff';
             }
             $fakeInput = new ArgvInput($argv, $command->getDefinition());
             $command->run($fakeInput, $output);
