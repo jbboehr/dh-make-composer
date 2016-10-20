@@ -33,9 +33,12 @@ class LinksGenerator extends AbstractGenerator
         if( !empty($autoload['psr-0']) ) {
             foreach( $autoload['psr-0'] as $namespace => $path ) {
                 $fragment = str_replace(array('\\', '_'), '/', $namespace);
-                $left = rtrim($path, '/') . ($path && $fragment ? '/' : '') . $fragment;
-                $right = rtrim($fragment, '/');
-                $pathMap[$left] = $right;
+                // Scan
+                foreach( glob($outputDirectory . '/' . $fragment . '*') as $file ) {
+                    $right = substr($file, strlen($outputDirectory . '/'));
+                    $left = rtrim($path, '/') . ($path && $right ? '/' : '') . $right;
+                    $pathMap[$left] = $right;
+                }
             }
         }
 
